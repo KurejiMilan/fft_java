@@ -1,0 +1,5 @@
+INDEX VERSION 1.131+C:\mueller\MedL5\eclwsp\.metadata\.plugins\org.eclipse.jdt.core
+3433010419.index
+1071216881.index
+1865797976.index
+2367783050.index
