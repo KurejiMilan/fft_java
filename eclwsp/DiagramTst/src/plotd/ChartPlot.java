@@ -29,6 +29,7 @@ public class ChartPlot {
     static final int NTRACES = 2;
     private static Trace2DSimple trace_0;
     private static Trace2DSimple trace_1;
+    private static Trace2DSimple trace_2;
     private static int XCounter = 0;
     private FFTcta FftOBJ;
 
@@ -103,6 +104,7 @@ public class ChartPlot {
 			public void actionPerformed(ActionEvent e) {
 				FftOBJ.FFTrun(8);
 				System.out.println("FFTcta (8) done.");
+				ClearChart();
 				PlotFFT();
 			}
 		});
@@ -114,6 +116,7 @@ public class ChartPlot {
 			public void actionPerformed(ActionEvent e) {
 				FftOBJ.FFTrun(16);
 				System.out.println("FFTcta (16) done.");
+				ClearChart();
 				PlotFFT();
 			}
 		});
@@ -124,6 +127,7 @@ public class ChartPlot {
 			public void actionPerformed(ActionEvent e) {
 				FftOBJ.FFTrun(64);
 				System.out.println("FFTcta (64) done.");
+				ClearChart();
 				PlotFFT();
 			}
 		});
@@ -147,14 +151,14 @@ public class ChartPlot {
 		int fft_len;
 		double re, im, mag;
 		
-		for (k=(XCounter*NPOINTS); k< (NPOINTS+XCounter*NPOINTS); k++)
-		{
-			y0 = Math.cos(xrad*k/NPOINTS);
-			y1 = 0.8 * Math.sin(xrad*k/NPOINTS);
-			trace_0.addPoint(k,y0); trace_0.addPoint(k+1, y0);
-			trace_1.addPoint(k,y1);  trace_1.addPoint(k+1,y1);
-		}
-		XCounter++;
+//		for (k=(XCounter*NPOINTS); k< (NPOINTS+XCounter*NPOINTS); k++)
+//		{
+//			y0 = Math.cos(xrad*k/NPOINTS);
+//			y1 = 0.8 * Math.sin(xrad*k/NPOINTS);
+//			trace_0.addPoint(k,y0); trace_0.addPoint(k+1, y0);
+//			trace_1.addPoint(k,y1);  trace_1.addPoint(k+1,y1);
+//		}
+//		XCounter++;
 		fft_len = FftOBJ.FftGetLength();
 		System.out.println("--- PlotFFT() ---");
 		System.out.printf("  k		re		im		mag\n");
@@ -163,6 +167,9 @@ public class ChartPlot {
 			re = FftOBJ.FftGetReal(k);
 			im = FftOBJ.FftGetImag(k);
 			mag = Math.hypot(re, im);
+			trace_0.addPoint(k-0.3, 0);trace_0.addPoint(k-0.3,mag); trace_0.addPoint(k+0.3, mag);trace_0.addPoint(k+0.3, 0);trace_0.addPoint(k+0.7, 0);
+			trace_1.addPoint(k, 0);trace_1.addPoint(k,im); trace_1.addPoint(k+0.2, im);trace_1.addPoint(k+0.2, 0);trace_1.addPoint(k+0.8, 0);
+			trace_2.addPoint(k-0.2, 0);trace_2.addPoint(k-0.2,re); trace_2.addPoint(k, re);trace_2.addPoint(k, 0);trace_2.addPoint(k+1, 0);
 			System.out.printf("%3d	    %10.4f	    %10.4f	    %10.4f\n", k, re, im, mag);
 		}
 		System.out.printf("-----------------------------------------------------------------------\n");
@@ -173,6 +180,7 @@ public class ChartPlot {
 		XCounter = 0;
 		trace_0.removeAllPoints();
 		trace_1.removeAllPoints();		
+		trace_2.removeAllPoints();
 	}
 
 	private void CreateChart()
@@ -182,8 +190,11 @@ public class ChartPlot {
         chart.addTrace(trace_0);
         trace_1 = new Trace2DSimple();
         chart.addTrace(trace_1);
-        trace_0.setColor(Color.blue);  trace_0.setName("trace 0");
-        trace_1.setColor(Color.red);  trace_1.setName("trace 1");
+        trace_2 = new Trace2DSimple();
+        chart.addTrace(trace_2);
+        trace_0.setColor(Color.blue);  trace_0.setName("fft_mag");
+        trace_1.setColor(Color.red);  trace_1.setName("fft_img");
+        trace_2.setColor(Color.green); trace_2.setName("fft_real");
         Chart_panel.setLayout(new BorderLayout(0, 0));
         
         Chart_panel.add(chart);

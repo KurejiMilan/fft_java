@@ -11,6 +11,7 @@ public class FFTcta {
 	private double so_im[] = new double[MAX_POINTS];
 	private double WNn_re[] = new double[MAX_PTS2];
 	private double WNn_im[] = new double[MAX_PTS2];
+	// NN number of sample, NN2 half of NN NNlog2 holds the number of fft stages
 	private int NN, NN2, NNlog2;
 	// sample data
 	private final double T_s = 1.0 / 8.0E3;
@@ -51,6 +52,7 @@ public class FFTcta {
 	
 	private boolean FftInit() {
 		int k, n;
+//		NN holds the number of samples
 		NN = N_SAMPLES;
 		NN2 = NN /2;
 		NNlog2 = 0;
@@ -81,24 +83,86 @@ public class FFTcta {
 		return true;
 	}
 	
+//	private void FftStage(int stage) {
+//		
+//		for (int k =0; k <NN; k++) {
+//			si_re[k] = so_re[k];
+//			si_im[k] = so_im[k];
+//		}
+//		
+//		int chunk = 2*(int)Math.pow(2.0, stage);
+//		WWn_re[0];
+//		for(int i = 0; i < NN; i+=chunk) {
+//			
+//			for(int j = i; j<i+chunk; j++) {
+//				
+//				if(j<i+chunk/2) {
+//					System.out.printf("add %d and %d\n", j, j+chunk/2);
+//				}else {
+//					System.out.printf("sub %d and %d\n", j-chunk/2, j);
+//				}
+//			}
+//
+//			System.out.printf("i=%d\n", i);
+//		}
+//		
+//		
+//		// System.out.printf("base=%d\n", chunk);
+//		// Butterfly algorithm
+//		System.out.printf(" ----------------\n");
+//		System.out.printf(" ---stage %2d ---\n", stage);
+//		System.out.printf(" ----------------\n");
+//		System.out.printf("  k		Re{si}		Im{si}		Re{so}		Im{so}\n");
+//		System.out.printf("-----------------------------------------------------------------------\n");
+//		for (int k=0; k<NN; k++) {
+//			System.out.printf("%3d	    %10.4f	    %10.4f	    %10.4f	    %10.4f \n", k, si_re[k], si_im[k], so_re[k], so_im[k]);
+//		}
+//		System.out.printf("-----------------------------------------------------------------------\n");
+//	} 
+
 	private void FftStage(int stage) {
 		// algorithm to compute the fft at different stages
 		// for 8 bit fft the stages are 3
 		int k = 0;
-		for (k =0; k <NN; k++) {
-			si_re[k] = so_re[k];
-			si_im[k] = so_im[k];
+		int i,j, z=0,  step = 1, size;
+		double tempReal, tempImag, Real, Imag;
+		
+		size = (int)Math.pow(2.0, (double)stage);
+		step = (int)(size * 2);
+
+		for (i = 0; i < size; i++) {
+		Real = WNn_re[z];
+		Imag = WNn_im[z];
+
+		z+= 1 << (NNlog2 - stage - 1);
+
+			for (j = i; j < N_SAMPLES; j = j + step)
+			{
+				tempReal = so_re[j+size] * Real - so_im[j+size] * Imag;
+				tempImag = so_im[j+size] * Real + so_re[j+size] * Imag;
+		
+				so_re[j+size] = so_re[j]-tempReal;
+				so_im[j+size] = so_im[j]-tempImag;
+				so_re[j] = so_re[j] + tempReal;
+				so_im[j] = so_im[j] + tempImag;
+			}
 		}
+
 		// Butterfly algorithm
 		System.out.printf(" ----------------\n");
 		System.out.printf(" ---stage %2d ---\n", stage);
 		System.out.printf(" ----------------\n");
-		System.out.printf("  k		Re{si}		Im{si}		Re{so}		Im{so}\n");
+		System.out.printf("  k Re{si} Im{si} Re{so} Im{so}\n");
 		System.out.printf("-----------------------------------------------------------------------\n");
 		for (k=0;k<NN; k++) {
-			System.out.printf("%3d	    %10.4f	    %10.4f	    %10.4f	    %10.4f \n", k, si_re[k], si_im[k], so_re[k], so_im[k]);
+			System.out.printf("%3d    %10.4f    %10.4f    %10.4f    %10.4f \n", k, si_re[k], si_im[k], so_re[k], so_im[k]);
 		}
 		System.out.printf("-----------------------------------------------------------------------\n");
+
+		for (k =0; k <NN; k++) {
+			si_re[k] = so_re[k];
+			si_im[k] = so_im[k];
+		}
 	} 
 	
 	private void FftComp() {
